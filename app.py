@@ -4,6 +4,8 @@ import streamlit as st
 from src.screen.home_screen import home_screen
 from src.screen.student_screen import student_screen
 from src.screen.teacher_screen import teacher_screen
+
+from src.components.dislog_auto_enroll import auto_enroll_dialog
 def main():
 
     if 'login_type' not in st.session_state:
