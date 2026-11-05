@@ -49,19 +49,29 @@ def create_subject(subject_code, name, section, teacher_id):
     return response.data
 
 def get_teacher_subjects(teacher_id):
-    response = supabase.table('subjects').select("*, subject_students(count), attendance_logs(timestamp)").eq("teacher_id", teacher_id).execute()
+    response = (
+        supabase.table('subjects')
+        .select(
+            "*, subject_students!subject_students_subject_id_fkey(count), attendence_logs!attendence_logs_subject_id_fkey(timestamp)"
+        )
+        .eq("teacher_id", teacher_id)
+        .execute()
+    )
+
     subjects = response.data
 
-
     for sub in subjects:
-        sub['total_students'] = sub.get("subject_students", [{}])[0].get('count', 0) if sub.get('subject_students') else 0
-        attendance = sub.get('attendance_logs', [])
+        sub['total_students'] = (
+            sub.get("subject_students", [{}])[0].get('count', 0)
+            if sub.get('subject_students') else 0
+        )
+
+        attendance = sub.get('attendence_logs', [])
         unique_sessions = len(set(log['timestamp'] for log in attendance))
         sub['total_classes'] = unique_sessions
 
-
-        sub.pop('subject_student', None)
-        sub.pop('attendance_logs', None)
+        sub.pop('subject_students', None)
+        sub.pop('attendence_logs', None)
 
     return subjects
 
@@ -93,5 +103,10 @@ def create_attendance(logs):
     return response.data
 
 def get_attendance_for_teacher(teacher_id):
-    response = supabase.table('attendance_logs').select("*, subjects!inner(*)").eq('subjects.teacher_id', teacher_id).execute()
+    response = (
+        supabase.table('attendence_logs')
+        .select('*, subjects!attendence_logs_subject_id_fkey!inner(*)')
+        .eq('subjects.teacher_id', teacher_id)
+        .execute()
+    )
     return response.data
