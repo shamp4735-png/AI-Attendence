@@ -54,7 +54,13 @@ def update_student_face_embedding(student_id, face_embedding):
 
 
 def create_subject(subject_code, name, section, teacher_id):
-    data = {"subject_code": subject_code, "name": name, "section": section, "teacher_id": teacher_id}
+    data = {
+        "subject_code": subject_code,
+        "name": name,
+        "section": section,
+        "teacher_id": teacher_id
+    }
+
     response = supabase.table("subjects").insert(data).execute()
     return response.data
 
@@ -98,14 +104,30 @@ def  unenroll_student_to_subject(student_id, subject_id):
 
 
 
+
 def get_student_subjects(student_id):
-    response = supabase.table('subject_students').select('*, subjects(*)').eq('student_id', student_id).execute()
+    response = (
+        supabase.table('subject_students')
+        .select('*, subjects!subject_students_subject_id_fkey(*)')
+        .eq('student_id', student_id)
+        .execute()
+    )
+
     return response.data
+
+
 
 
 def get_student_attendance(student_id):
-    response = supabase.table('attendance_logs').select('*, subjects(*)').eq('student_id', student_id).execute()
+    response = (
+        supabase.table('attendence_logs')
+        .select('*, subjects!attendence_logs_subject_id_fkey(*)')
+        .eq('student_id', student_id)
+        .execute()
+    )
+
     return response.data
+
 
 
 def create_attendance(logs):

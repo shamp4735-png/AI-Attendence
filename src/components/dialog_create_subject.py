@@ -1,23 +1,48 @@
+
 import streamlit as st
-from src.database.db import create_student
+from src.database.db import create_subject
 
 
-
-@st.dialog("Create Ner Subject")
+@st.dialog("Create New Subject")
 def create_subject_dialog(teacher_id):
+
     st.write("Enter the details of new subject")
-    sub_id = st.text_input("Subject Code", placeholder="C5101")
-    sub_name = st.text_input("Subject Name", placeholder="Introduction to Computer Science")
-    sub_section = st.text_input("Section", placeholder="A")
 
+    sub_id = st.text_input(
+        "Subject Code",
+        placeholder="CS101"
+    )
 
-    if st.button("Create Subject Now", type='primary', width='stretch'):
+    sub_name = st.text_input(
+        "Subject Name",
+        placeholder="Introduction to Computer Science"
+    )
+
+    sub_section = st.text_input(
+        "Section",
+        placeholder="A"
+    )
+
+    if st.button("Create Subject Now", type="primary", width="stretch"):
+
         if sub_id and sub_name and sub_section:
+
             try:
-                create_student(sub_id, sub_section, teacher_id)
-                st.toast("Subject Create Succesfully!")
-                st.rerun()
+                response = create_subject(
+                    sub_id,
+                    sub_name,
+                    sub_section,
+                    teacher_id
+                )
+
+                if response:
+                    st.success("Subject created successfully!")
+                    st.rerun()
+                else:
+                    st.error("Subject was not created. Please try again.")
+
             except Exception as e:
                 st.error(f"Error: {str(e)}")
+
         else:
-            st.warning("Please fill all the files")        
+            st.warning("Please fill all the fields.")
