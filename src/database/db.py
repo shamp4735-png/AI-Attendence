@@ -42,6 +42,16 @@ def create_student(new_name, face_embedding=None, voice_embedding=None):
     response = supabase.table('students').insert(data).execute()
     return response.data
 
+def update_student_face_embedding(student_id, face_embedding):
+    response = (
+        supabase.table('students')
+        .update({'face_embedding': face_embedding})
+        .eq('student_id', student_id)
+        .execute()
+    )
+
+    return response.data    
+
 
 def create_subject(subject_code, name, section, teacher_id):
     data = {"subject_code": subject_code, "name": name, "section": section, "teacher_id": teacher_id}
@@ -110,3 +120,18 @@ def get_attendance_for_teacher(teacher_id):
         .execute()
     )
     return response.data
+
+
+
+def check_face_embeddings():
+    students = get_all_students()
+
+    for student in students:
+        embedding = student.get('face_embedding')
+
+        print(
+            "ID:", student.get('student_id'),
+            "| Name:", student.get('name'),
+            "| Embedding type:", type(embedding),
+            "| First values:", str(embedding)[:100]
+        )

@@ -37,6 +37,7 @@ def get_face_embeddings(image_np):
         encodings.append(np.array(face_descriptor))
     return encodings
 
+
 @st.cache_resource
 def get_trained_model():
     X = []
@@ -51,15 +52,23 @@ def get_trained_model():
         embedding = student.get('face_embedding')
         student_id = student.get('student_id')
 
-        if embedding is not None and student_id is not None:
-            X.append(np.array(embedding, dtype=float))
+        if embedding is None or student_id is None:
+            continue
+
+        try:
+            embedding = np.array(embedding, dtype=float)
+
+            # Every face embedding must contain 128 numbers
+            if embedding.shape != (128,):
+                continue
+
+            X.append(embedding)
             y.append(int(student_id))
 
-    # No face embeddings available
-    if len(X) == 0:
-        return None
+        except (ValueError, TypeError):
+            continue
 
-    # SVC needs at least two different students
+    # At least two different students are required
     if len(set(y)) < 2:
         return None
 
@@ -69,7 +78,6 @@ def get_trained_model():
         class_weight='balanced'
     )
 
-    # Train the classifier
     clf.fit(X, y)
 
     return {
@@ -78,15 +86,15 @@ def get_trained_model():
         'y': y
     }
 
+
+
 def train_classifier():
-    st.cache_resource.clear()
+    get_trained_model.clear()
 
     model_data = get_trained_model()
 
-    if model_data is None:
-        return False
+    return model_data is not None
 
-    return True
 
 def predict_attendance(class_image_np):
 
