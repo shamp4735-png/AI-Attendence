@@ -17,17 +17,17 @@ def subject_card(name, code, section, stats=None, footer_callback=None):
 
     <h3 style="
         margin: 0;
-        color: #1e293b;
+        color: #1E293B !important;
         font-size: 1.5rem;
     ">
         {escape(str(name))}
     </h3>
 
-    <p style="color: #64748b; margin: 10px 0;">
+    <p style="color: #64748B !important; margin: 10px 0;">
         Code:
         <span style="
             background: #E0E3FF;
-            color: #5865F2;
+            color: #5865F2 !important;
             padding: 2px 8px;
             border-radius: 5px;
         ">
@@ -50,15 +50,20 @@ def subject_card(name, code, section, stats=None, footer_callback=None):
 
             html_content += f"""
         <div style="
-            background: #EB459E10;
+            background: #FCEFF6;
+            color: #1E293B !important;
             padding: 8px 12px;
             border-radius: 12px;
             font-size: 0.9rem;
             margin-bottom: 5px;
         ">
             {escape(str(icon))}
-            <b>{escape(str(value))}</b>
-            {escape(str(label))}
+            <b style="color: #1E293B !important;">
+                {escape(str(value))}
+            </b>
+            <span style="color: #1E293B !important;">
+                {escape(str(label))}
+            </span>
         </div>
 """
 
@@ -71,5 +76,6 @@ def subject_card(name, code, section, stats=None, footer_callback=None):
 """
 
     st.html(html_content)
+
     if footer_callback:
         footer_callback()
