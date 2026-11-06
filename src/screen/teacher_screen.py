@@ -74,6 +74,7 @@ def teacher_dashboard():
         header_dashboard()
 
     with c2:
+
         st.subheader(f"Welcome, {teacher_data['name']}")
 
         if st.button(
@@ -82,6 +83,7 @@ def teacher_dashboard():
             key='loginbackbtn',
             shortcut="control+backspace"
         ):
+
             st.session_state['is_logged_in'] = False
             del st.session_state.teacher_data
             st.rerun()
@@ -107,6 +109,7 @@ def teacher_dashboard():
             width='stretch',
             icon=':material/ar_on_you:'
         ):
+
             st.session_state.current_teacher_tab = 'take_attendance'
             st.rerun()
 
@@ -124,6 +127,7 @@ def teacher_dashboard():
             width='stretch',
             icon=':material/book_ribbon:'
         ):
+
             st.session_state.current_teacher_tab = 'manage_subjects'
             st.rerun()
 
@@ -141,6 +145,7 @@ def teacher_dashboard():
             width='stretch',
             icon=':material/cards_stack:'
         ):
+
             st.session_state.current_teacher_tab = 'attendance_records'
             st.rerun()
 
@@ -197,7 +202,6 @@ def teacher_tab_take_attendance():
             options=list(subject_options.keys())
         )
 
-    # Get selected subject ID before using it
     selected_subject_id = subject_options[selected_subject_label]
 
     with col2:
@@ -208,6 +212,7 @@ def teacher_tab_take_attendance():
             icon=':material/photo_prints:',
             width='stretch'
         ):
+
             add_photos_dialog()
 
     st.divider()
@@ -262,7 +267,7 @@ def teacher_tab_take_attendance():
 
                 all_detected_ids = {}
 
-                # Detect faces in all uploaded photos
+                # Step 1: Detect faces in uploaded photos
                 for idx, img in enumerate(
                     st.session_state.attendance_images
                 ):
@@ -281,18 +286,50 @@ def teacher_tab_take_attendance():
                                 student_id, []
                             ).append(f"Photo {idx + 1}")
 
-                # Fetch enrolled students using correct FK
+                # Step 2: Fetch enrolled student IDs
                 enrolled_res = (
                     supabase.table('subject_students')
-                    .select(
-                        '*, students!subject_students_student_id_fkey(*)'
-                    )
+                    .select('student_id')
                     .eq('subject_id', selected_subject_id)
                     .execute()
                 )
 
-                enrolled_students = enrolled_res.data
+                enrolled_rows = enrolled_res.data or []
 
+                student_ids = list({
+                    str(row['student_id'])
+                    for row in enrolled_rows
+                    if row.get('student_id') is not None
+                })
+
+                # Step 3: Fetch student details separately
+                enrolled_students = []
+
+                if student_ids:
+
+                    students_res = (
+                        supabase.table('students')
+                        .select('*')
+                        .in_('student_id', student_ids)
+                        .execute()
+                    )
+
+                    students_by_id = {
+                        str(student['student_id']): student
+                        for student in students_res.data
+                    }
+
+                    enrolled_students = [
+                        {
+                            'students': students_by_id.get(
+                                str(row['student_id'])
+                            )
+                        }
+                        for row in enrolled_rows
+                        if row.get('student_id') is not None
+                    ]
+
+                # Step 4: Generate attendance results
                 if not enrolled_students:
 
                     st.warning(
@@ -388,9 +425,9 @@ def teacher_tab_manage_subjects():
             'Create New Subject',
             width='stretch'
         ):
+
             create_subject_dialog(teacher_id)
 
-    # Get all subjects for this teacher
     subjects = get_teacher_subjects(teacher_id)
 
     if subjects:
