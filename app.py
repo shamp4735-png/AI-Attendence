@@ -7,6 +7,10 @@ from src.screen.teacher_screen import teacher_screen
 
 from src.components.dislog_auto_enroll import auto_enroll_dialog
 def main():
+    st.set_page_config(
+        page_title="SnapClass - Making Attendance faster using AI",
+        page_icon="https://i.ibb.co/0K1Z7kM/snapclass-logo.png"
+    )
 
     if 'login_type' not in st.session_state:
         st.session_state['login_type'] = None
